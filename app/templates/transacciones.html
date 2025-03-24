@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Transacciones - Tienda de Libros</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .table-container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Tienda de Libros</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/libros">Libros</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/transacciones">Transacciones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/caja">Caja</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container">
+        <h1 class="mb-4">Gestión de Transacciones</h1>
+
+        <!-- Formulario para crear transacción -->
+        <div class="card">
+            <div class="card-header">
+                Registrar Nueva Transacción
+            </div>
+            <div class="card-body form-container">
+                <form id="transaccionForm">
+                    <div class="mb-3">
+                        <label for="isbn" class="form-label">Libro:</label>
+                        <select class="form-select" id="isbn" required>
+                            <option value="">Seleccione un libro</option>
+                            <!-- Las opciones se cargarán dinámicamente -->
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tipoTransaccion" class="form-label">Tipo de Transacción:</label>
+                        <select class="form-select" id="tipoTransaccion" required>
+                            <option value="">Seleccione un tipo</option>
+                            <option value="1">Venta</option>
+                            <option value="2">Abastecimiento</option>
+                        </select>
+                        <small class="text-muted">
+                            Venta: Disminuye el inventario y aumenta el saldo en caja.<br>
+                            Abastecimiento: Aumenta el inventario y disminuye el saldo en caja.
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad:</label>
+                        <input type="number" class="form-control" id="cantidad" min="1" step="1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="infoLibro" class="form-label">Información del Libro:</label>
+                        <div class="card">
+                            <div class="card-body" id="infoLibro">
+                                Seleccione un libro para ver su información
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info" id="transaccionInfo" style="display: none;">
+                        <!-- Información de la transacción -->
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Registrar Transacción</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Filtro para transacciones -->
+        <div class="card">
+            <div class="card-header">
+                Filtrar Transacciones
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="filtroLibro" class="form-label">Filtrar por Libro:</label>
+                        <select class="form-select" id="filtroLibro">
+                            <option value="">Todos los libros</option>
+                            <!-- Las opciones se cargarán dinámicamente -->
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filtroTipo" class="form-label">Filtrar por Tipo:</label>
+                        <select class="form-select" id="filtroTipo">
+                            <option value="">Todos los tipos</option>
+                            <option value="1">Ventas</option>
+                            <option value="2">Abastecimientos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button id="btnFiltrar" class="btn btn-secondary">Aplicar Filtros</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de transacciones -->
+        <div class="table-container">
+            <h2>Historial de Transacciones</h2>
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Libro</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>Cantidad</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaTransacciones">
+                    <!-- Los datos se cargarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables globales
+        const API_URL_TRANSACCIONES = '/api/transacciones';
+        const API_URL_LIBROS = '/api/libros';
+        let libros = [];
+        
+        // Elementos del DOM
+        const transaccionForm = document.getElementById('transaccionForm');
+        const selectLibro = document.getElementById('isbn');
+        const selectTipoTransaccion = document.getElementById('tipoTransaccion');
+        const inputCantidad = document.getElementById('cantidad');
+        const infoLibro = document.getElementById('infoLibro');
+        const transaccionInfo = document.getElementById('transaccionInfo');
+        const filtroLibro = document.getElementById('filtroLibro');
+        const filtroTipo = document.getElementById('filtroTipo');
+        const btnFiltrar = document.getElementById('btnFiltrar');
+
+        // Cargar datos al iniciar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarLibros();
+            cargarTransacciones();
+            
+            // Evento para mostrar información del libro seleccionado
+            selectLibro.addEventListener('change', mostrarInfoLibro);
+            
+            // Evento para mostrar información de la transacción
+            [selectLibro, selectTipoTransaccion, inputCantidad].forEach(el => {
+                el.addEventListener('change', actualizarInfoTransaccion);
+                el.addEventListener('input', actualizarInfoTransaccion);
+            });
+            
+            // Evento para filtrar transacciones
+            btnFiltrar.addEventListener('click', cargarTransacciones);
+        });
+
+        // Manejar el envío del formulario
+        transaccionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            registrarTransaccion();
+        });
+
+        // Función para cargar los libros
+        function cargarLibros() {
+            fetch(API_URL_LIBROS)
+                .then(response => response.json())
+                .then(data => {
+                    libros = data;
+                    
+                    // Llenar el select de libros en el formulario
+                    selectLibro.innerHTML = '<option value="">Seleccione un libro</option>';
+                    filtroLibro.innerHTML = '<option value="">Todos los libros</option>';
+                    
+                    data.forEach(libro => {
+                        // Opción para el formulario
+                        let option = document.createElement('option');
+                        option.value = libro.ISBN;
+                        option.textContent = `${libro.titulo} (ISBN: ${libro.ISBN})`;
+                        selectLibro.appendChild(option);
+                        
+                        // Opción para el filtro
+                        let optionFiltro = document.createElement('option');
+                        optionFiltro.value = libro.ISBN;
+                        optionFiltro.textContent = `${libro.titulo} (ISBN: ${libro.ISBN})`;
+                        filtroLibro.appendChild(optionFiltro);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar los libros:', error);
+                    alert('Error al cargar los libros. Consulta la consola para más detalles.');
+                });
+        }
+
+        // Función para mostrar información del libro seleccionado
+        function mostrarInfoLibro() {
+            const isbn = selectLibro.value;
+            
+            if (!isbn) {
+                infoLibro.innerHTML = 'Seleccione un libro para ver su información';
+                return;
+            }
+            
+            const libro = libros.find(l => l.ISBN === isbn);
+            
+            if (libro) {
+                infoLibro.innerHTML = `
+                    <strong>Título:</strong> ${libro.titulo}<br>
+                    <strong>ISBN:</strong> ${libro.ISBN}<br>
+                    <strong>Precio de Compra:</strong> $${libro.precio_compra.toFixed(2)}<br>
+                    <strong>Precio de Venta:</strong> $${libro.precio_venta.toFixed(2)}<br>
+                    <strong>Stock Actual:</strong> ${libro.cantidad_actual} unidades
+                `;
+            } else {
+                infoLibro.innerHTML = 'Información del libro no disponible';
+            }
+            
+            actualizarInfoTransaccion();
+        }
+
+        // Función para actualizar la información de la transacción
+        function actualizarInfoTransaccion() {
+            const isbn = selectLibro.value;
+            const tipoTransaccion = selectTipoTransaccion.value;
+            const cantidad = inputCantidad.value ? parseInt(inputCantidad.value) : 0;
+            
+            if (!isbn || !tipoTransaccion || !cantidad) {
+                transaccionInfo.style.display = 'none';
+                return;
+            }
+            
+            const libro = libros.find(l => l.ISBN === isbn);
+            
+            if (!libro) {
+                transaccionInfo.style.display = 'none';
+                return;
+            }
+            
+            let mensaje = '';
+            let alertClass = 'alert-info';
+            
+            if (tipoTransaccion === '1') { // Venta
+                const monto = cantidad * libro.precio_venta;
+                mensaje = `
+                    <strong>Tipo de Transacción:</strong> Venta<br>
+                    <strong>Cantidad:</strong> ${cantidad} unidades<br>
+                    <strong>Monto Total:</strong> $${monto.toFixed(2)}<br>
+                `;
+                
+                // Verificar si hay suficiente stock
+                if (cantidad > libro.cantidad_actual) {
+                    mensaje += `<br><strong>¡Advertencia!</strong> No hay suficiente stock disponible. Stock actual: ${libro.cantidad_actual} unidades.`;
+                    alertClass = 'alert-danger';
+                }
+            } else { // Abastecimiento
+                const monto = cantidad * libro.precio_compra;
+                mensaje = `
+                    <strong>Tipo de Transacción:</strong> Abastecimiento<br>
+                    <strong>Cantidad:</strong> ${cantidad} unidades<br>
+                    <strong>Monto Total:</strong> $${monto.toFixed(2)}<br>
+                `;
+            }
+            
+            transaccionInfo.innerHTML = mensaje;
+            transaccionInfo.className = `alert ${alertClass}`;
+            transaccionInfo.style.display = 'block';
+        }
+
+        // Función para registrar una transacción
+        function registrarTransaccion() {
+            const isbn = selectLibro.value;
+            const tipoTransaccion = parseInt(selectTipoTransaccion.value);
+            const cantidad = parseInt(inputCantidad.value);
+            
+            // Validaciones básicas
+            if (!isbn || !tipoTransaccion || !cantidad) {
+                alert('Por favor, complete todos los campos del formulario.');
+                return;
+            }
+            
+            // Validar stock si es una venta
+            if (tipoTransaccion === 1) {
+                const libro = libros.find(l => l.ISBN === isbn);
+                if (libro && cantidad > libro.cantidad_actual) {
+                    alert(`No hay suficiente stock disponible. Stock actual: ${libro.cantidad_actual} unidades.`);
+                    return;
+                }
+            }
+            
+            // Crear objeto de transacción
+            const transaccion = {
+                ISBN: isbn,
+                tipo_transaccion: tipoTransaccion,
+                cantidad: cantidad
+            };
+            
+            // Enviar la transacción al servidor
+            fetch(API_URL_TRANSACCIONES, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(transaccion)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Limpiar formulario
+                transaccionForm.reset();
+                infoLibro.innerHTML = 'Seleccione un libro para ver su información';
+                transaccionInfo.style.display = 'none';
+                
+                // Recargar datos
+                cargarLibros();
+                cargarTransacciones();
+                
+                alert('Transacción registrada con éxito!');
+            })
+            .catch(error => {
+                console.error('Error al registrar la transacción:', error);
+                alert(`Error: ${error.detail || 'Error al registrar la transacción. Consulta la consola para más detalles.'}`);
+            });
+        }
+
+        // Función para cargar las transacciones con filtros
+        function cargarTransacciones() {
+            // Obtener valores de filtros
+            const isbnFiltro = filtroLibro.value;
+            const tipoFiltro = filtroTipo.value;
+            
+            // Construir URL según filtros
+            let url = API_URL_TRANSACCIONES;
+            if (isbnFiltro) {
+                url = `${API_URL_TRANSACCIONES}/libro/${isbnFiltro}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Filtrar por tipo si es necesario
+                    if (tipoFiltro) {
+                        data = data.filter(t => t.tipo_transaccion === parseInt(tipoFiltro));
+                    }
+                    
+                    // Mostrar transacciones en la tabla
+                    const tablaTransacciones = document.getElementById('tablaTransacciones');
+                    tablaTransacciones.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        tablaTransacciones.innerHTML = '<tr><td colspan="6" class="text-center">No hay transacciones que coincidan con los filtros</td></tr>';
+                        return;
+                    }
+                    
+                    data.forEach(transaccion => {
+                        // Buscar información del libro
+                        const libro = libros.find(l => l.ISBN === transaccion.ISBN) || { titulo: 'Desconocido' };
+                        
+                        // Formatear la fecha
+                        const fecha = new Date(transaccion.fecha_transaccion);
+                        const fechaFormateada = fecha.toLocaleDateString('es-ES') + ' ' + fecha.toLocaleTimeString('es-ES');
+                        
+                        // Calcular monto
+                        let monto = 0;
+                        if (transaccion.tipo_transaccion === 1) { // Venta
+                            monto = transaccion.cantidad * libro.precio_venta;
+                        } else { // Abastecimiento
+                            monto = transaccion.cantidad * libro.precio_compra;
+                        }
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${transaccion.id_transaccion}</td>
+                            <td>${libro.titulo}</td>
+                            <td>${transaccion.tipo_transaccion === 1 ? 'Venta' : 'Abastecimiento'}</td>
+                            <td>${fechaFormateada}</td>
+                            <td>${transaccion.cantidad}</td>
+                            <td>$${monto.toFixed(2)}</td>
+                        `;
+                        tablaTransacciones.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar las transacciones:', error);
+                    alert('Error al cargar las transacciones. Consulta la consola para más detalles.');
+                });
+        }
+    </script>
+</body>
+</html> 

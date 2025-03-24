@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Caja - Tienda de Libros</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .table-container {
+            margin-top: 30px;
+        }
+        .saldo-card {
+            background-color: #f8f9fa;
+            border-left: 5px solid #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Tienda de Libros</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/libros">Libros</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transacciones">Transacciones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/caja">Caja</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container">
+        <h1 class="mb-4">Gestión de Caja</h1>
+
+        <!-- Saldo actual -->
+        <div class="card saldo-card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>Saldo Actual</h3>
+                        <h2 id="saldoActual" class="display-4">$0.00</h2>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-end align-items-center h-100">
+                            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#movimientoModal" onclick="prepararMovimiento('INGRESO')">
+                                <i class="bi bi-plus-circle"></i> Registrar Ingreso
+                            </button>
+                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#movimientoModal" onclick="prepararMovimiento('EGRESO')">
+                                <i class="bi bi-dash-circle"></i> Registrar Egreso
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen de movimientos -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Ingresos</h5>
+                        <p class="card-text h3" id="totalIngresos">$0.00</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Egresos</h5>
+                        <p class="card-text h3" id="totalEgresos">$0.00</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">Resultado Neto</h5>
+                        <p class="card-text h3" id="resultadoNeto">$0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de movimientos -->
+        <div class="table-container">
+            <h2>Historial de Movimientos</h2>
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Monto</th>
+                        <th>Saldo</th>
+                        <th>Transacción Relacionada</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaMovimientos">
+                    <!-- Los datos se cargarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para registrar movimiento manual -->
+    <div class="modal fade" id="movimientoModal" tabindex="-1" aria-labelledby="movimientoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="movimientoModalLabel">Registrar Movimiento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="movimientoForm">
+                        <input type="hidden" id="tipoMovimiento" value="INGRESO">
+                        
+                        <div class="mb-3">
+                            <label for="monto" class="form-label">Monto:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="monto" min="0.01" step="0.01" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción:</label>
+                            <textarea class="form-control" id="descripcion" rows="3" placeholder="Describa el motivo del movimiento"></textarea>
+                        </div>
+                        
+                        <div class="alert" id="alertaMovimiento" role="alert" style="display: none;"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarMovimiento">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables globales
+        const API_URL_CAJA = '/api/caja';
+        let modalMovimiento;
+        
+        // Cargar datos al iniciar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarDatosCaja();
+            
+            // Inicializar modal
+            modalMovimiento = new bootstrap.Modal(document.getElementById('movimientoModal'));
+            
+            // Configurar evento para guardar movimiento
+            document.getElementById('btnGuardarMovimiento').addEventListener('click', guardarMovimiento);
+        });
+        
+        // Función para cargar datos de caja
+        function cargarDatosCaja() {
+            // Cargar saldo actual
+            fetch(`${API_URL_CAJA}/saldo`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('saldoActual').textContent = `$${data.saldo.toFixed(2)}`;
+                })
+                .catch(error => {
+                    console.error('Error al cargar el saldo:', error);
+                    alert('Error al cargar el saldo. Consulta la consola para más detalles.');
+                });
+                
+            // Cargar movimientos
+            fetch(API_URL_CAJA)
+                .then(response => response.json())
+                .then(data => {
+                    // Calcular totales
+                    let totalIngresos = 0;
+                    let totalEgresos = 0;
+                    
+                    data.forEach(movimiento => {
+                        if (movimiento.tipo_movimiento === 'INGRESO') {
+                            totalIngresos += movimiento.monto;
+                        } else {
+                            totalEgresos += movimiento.monto;
+                        }
+                    });
+                    
+                    // Mostrar totales
+                    document.getElementById('totalIngresos').textContent = `$${totalIngresos.toFixed(2)}`;
+                    document.getElementById('totalEgresos').textContent = `$${totalEgresos.toFixed(2)}`;
+                    document.getElementById('resultadoNeto').textContent = `$${(totalIngresos - totalEgresos).toFixed(2)}`;
+                    
+                    // Mostrar movimientos en la tabla
+                    const tablaMovimientos = document.getElementById('tablaMovimientos');
+                    tablaMovimientos.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        tablaMovimientos.innerHTML = '<tr><td colspan="6" class="text-center">No hay movimientos registrados</td></tr>';
+                        return;
+                    }
+                    
+                    data.forEach(movimiento => {
+                        // Formatear la fecha
+                        const fecha = new Date(movimiento.fecha_movimiento);
+                        const fechaFormateada = fecha.toLocaleDateString('es-ES') + ' ' + fecha.toLocaleTimeString('es-ES');
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${movimiento.id_movimiento}</td>
+                            <td>${fechaFormateada}</td>
+                            <td>
+                                <span class="badge ${movimiento.tipo_movimiento === 'INGRESO' ? 'bg-success' : 'bg-danger'}">
+                                    ${movimiento.tipo_movimiento}
+                                </span>
+                            </td>
+                            <td>$${movimiento.monto.toFixed(2)}</td>
+                            <td>$${movimiento.saldo_actual.toFixed(2)}</td>
+                            <td>${movimiento.id_transaccion ? `#${movimiento.id_transaccion}` : 'N/A'}</td>
+                        `;
+                        tablaMovimientos.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar los movimientos:', error);
+                    alert('Error al cargar los movimientos. Consulta la consola para más detalles.');
+                });
+        }
+        
+        // Función para preparar el modal según el tipo de movimiento
+        function prepararMovimiento(tipo) {
+            const tipoMovimiento = document.getElementById('tipoMovimiento');
+            const modalTitle = document.getElementById('movimientoModalLabel');
+            const btnGuardar = document.getElementById('btnGuardarMovimiento');
+            const alertaMovimiento = document.getElementById('alertaMovimiento');
+            
+            // Reiniciar formulario
+            document.getElementById('movimientoForm').reset();
+            alertaMovimiento.style.display = 'none';
+            
+            // Configurar según tipo
+            tipoMovimiento.value = tipo;
+            
+            if (tipo === 'INGRESO') {
+                modalTitle.textContent = 'Registrar Ingreso';
+                btnGuardar.className = 'btn btn-success';
+                btnGuardar.textContent = 'Registrar Ingreso';
+            } else {
+                modalTitle.textContent = 'Registrar Egreso';
+                btnGuardar.className = 'btn btn-danger';
+                btnGuardar.textContent = 'Registrar Egreso';
+                
+                // Verificar saldo disponible para egresos
+                fetch(`${API_URL_CAJA}/saldo`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const saldo = data.saldo;
+                        
+                        if (saldo <= 0) {
+                            alertaMovimiento.textContent = 'No hay saldo disponible para realizar egresos';
+                            alertaMovimiento.className = 'alert alert-warning';
+                            alertaMovimiento.style.display = 'block';
+                            document.getElementById('btnGuardarMovimiento').disabled = true;
+                        } else {
+                            alertaMovimiento.textContent = `Saldo disponible: $${saldo.toFixed(2)}`;
+                            alertaMovimiento.className = 'alert alert-info';
+                            alertaMovimiento.style.display = 'block';
+                            document.getElementById('btnGuardarMovimiento').disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al verificar saldo:', error);
+                    });
+            }
+        }
+        
+        // Función para guardar un movimiento manual
+        function guardarMovimiento() {
+            const tipo = document.getElementById('tipoMovimiento').value;
+            const monto = parseFloat(document.getElementById('monto').value);
+            const descripcion = document.getElementById('descripcion').value;
+            
+            // Validaciones básicas
+            if (!monto || monto <= 0) {
+                alert('Por favor, ingrese un monto válido mayor a cero.');
+                return;
+            }
+            
+            // Crear objeto de movimiento
+            const movimiento = {
+                tipo_movimiento: tipo,
+                monto: monto,
+                saldo_actual: 0  // Este valor se calculará en el backend
+            };
+            
+            // Enviar al servidor
+            fetch(API_URL_CAJA, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(movimiento)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Cerrar modal y recargar datos
+                modalMovimiento.hide();
+                cargarDatosCaja();
+                alert(`${tipo} registrado con éxito!`);
+            })
+            .catch(error => {
+                console.error('Error al registrar el movimiento:', error);
+                alert(`Error: ${error.detail || 'Error al registrar el movimiento. Consulta la consola para más detalles.'}`);
+            });
+        }
+    </script>
+</body>
+</html> 

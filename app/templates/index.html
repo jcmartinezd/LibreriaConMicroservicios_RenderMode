@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Libros - Sistema de Gestión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .hero {
+            background-color: #f8f9fa;
+            padding: 60px 0;
+            margin-bottom: 30px;
+        }
+        .feature-card {
+            height: 100%;
+            transition: transform 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Tienda de Libros</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/libros">Libros</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/transacciones">Transacciones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/caja">Caja</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="display-4 fw-bold">Sistema de Gestión para Tienda de Libros</h1>
+                    <p class="lead">Una solución completa para administrar el inventario, ventas y finanzas de tu librería.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a href="/libros" class="btn btn-primary btn-lg px-4 me-md-2">Gestionar Inventario</a>
+                        <a href="/transacciones" class="btn btn-outline-secondary btn-lg px-4">Registrar Ventas</a>
+                    </div>
+                </div>
+                <div class="col-md-6 d-none d-md-block text-center">
+                    <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" alt="Libros" class="img-fluid rounded shadow" width="400">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Características -->
+    <section class="container mb-5">
+        <h2 class="text-center mb-4">Características Principales</h2>
+        <div class="row g-4">
+            <!-- Característica 1 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">📚</div>
+                        <h3 class="card-title">Gestión de Inventario</h3>
+                        <p class="card-text">Administra tu catálogo de libros, con control de stock y precios de compra y venta.</p>
+                        <a href="/libros" class="btn btn-primary">Ir a Libros</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Característica 2 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">🔄</div>
+                        <h3 class="card-title">Transacciones</h3>
+                        <p class="card-text">Registra ventas y abastecimientos de libros, manteniendo un historial completo.</p>
+                        <a href="/transacciones" class="btn btn-primary">Ir a Transacciones</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Característica 3 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">💰</div>
+                        <h3 class="card-title">Control de Caja</h3>
+                        <p class="card-text">Monitorea los ingresos, egresos y el saldo actual de tu caja con reportes detallados.</p>
+                        <a href="/caja" class="btn btn-primary">Ir a Caja</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Información de la Arquitectura -->
+    <section class="container mb-5">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h3 class="mb-0">Arquitectura del Sistema</h3>
+            </div>
+            <div class="card-body">
+                <p>Este sistema implementa una arquitectura de microservicios que separa la lógica de negocio en componentes independientes:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Backend (API RESTful)</h4>
+                        <ul>
+                            <li><strong>FastAPI:</strong> Framework moderno y de alto rendimiento para la API</li>
+                            <li><strong>SQLAlchemy:</strong> ORM para interactuar con la base de datos</li>
+                            <li><strong>Servicios:</strong> Lógica de negocio encapsulada en servicios especializados</li>
+                            <li><strong>Integridad de datos:</strong> Implementada mediante servicios que reemplazan los triggers de la base de datos</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Frontend</h4>
+                        <ul>
+                            <li><strong>HTML, CSS, JavaScript:</strong> Interfaz de usuario responsive</li>
+                            <li><strong>Bootstrap:</strong> Framework CSS para diseño moderno</li>
+                            <li><strong>APIs REST:</strong> Comunicación con el backend mediante llamadas API</li>
+                            <li><strong>JavaScript puro:</strong> Sin dependencias de frameworks adicionales</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3">
+                    <strong>Nota:</strong> Esta aplicación está diseñada para ser desplegada en Render, aprovechando su facilidad de implementación y escalabilidad.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p>Sistema de Gestión para Tienda de Libros © 2023</p>
+            <p class="text-muted">Desarrollado como arquitectura de microservicios</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
